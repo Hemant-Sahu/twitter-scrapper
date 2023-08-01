@@ -1,11 +1,17 @@
 import csv
 import matplotlib.pyplot as plt
 from datetime import datetime
+import re
 
 filename = "twitter.csv"
  
 fields = []
 rows = []
+
+def extract_strings_after_hashtags(input_string):
+    hashtags = re.findall(r'#\w+', input_string)
+    strings_after_hashtags = [tag[1:] for tag in hashtags]
+    return strings_after_hashtags
 
 def extract_month_from_string(date_string):
     try:
@@ -52,17 +58,19 @@ tweetReshareCount = {}
 tweetCommentCount = {}
 tweetLikeCount = {}
 userActivityCount = [{}, {}, {}]
+clusterCount = {}
 for row in rows[:]:
     # parsing each column of a row
     if len(row) != 6:
         continue
     tweetReshareCount[row[1]] = row[5]
     tweetLikeCount[row[1]] = row[4]
+    clusters = extract_strings_after_hashtags(row[2])
+    for k in clusters:
+        clusterCount[k] = clusterCount.get(k, 0) + 1
     month = int(extract_month_from_string(row[0])) - 1
-    if row[3] in userActivityCount[month]:
-        userActivityCount[month][row[3]] += 1
-    else:
-        userActivityCount[month][row[3]] = 1
+    userActivityCount[month][row[3]] = userActivityCount[month].get(row[3], 0) + 1
+    
     
 orderedTweetReshareCount = sorted(tweetReshareCount.items(), key=lambda item: item[1], reverse=True)
 ororderedTweetLikeCount = sorted(tweetLikeCount.items(), key=lambda item: item[1], reverse=True)
@@ -70,6 +78,7 @@ ororderedUserActivityCount = [{}, {}, {}]
 ororderedUserActivityCount[0] = sorted(userActivityCount[0].items(), key=lambda item: item[1], reverse=True)
 ororderedUserActivityCount[1] = sorted(userActivityCount[1].items(), key=lambda item: item[1], reverse=True)
 ororderedUserActivityCount[2] = sorted(userActivityCount[2].items(), key=lambda item: item[1], reverse=True)
+orderedClusterCount = sorted(clusterCount.items(), key=lambda item: item[1], reverse=True)
 
     
     
@@ -104,6 +113,19 @@ plt.title('Reweet count')
 # Show the plot
 plt.show()
 
+# Extract values and frequencies from the data list
+values, frequencies = zip(*orderedClusterCount[:10])
+
+# Create a bar chart
+plt.bar(values, frequencies)
+
+# Add labels and title
+plt.xlabel('Cluster')
+plt.ylabel('Number of tags')
+plt.title('Cluster tag count')
+
+# Show the plot
+plt.show()
 
     
 # Extract values and frequencies from the data list
