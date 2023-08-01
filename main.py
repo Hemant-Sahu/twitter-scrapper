@@ -1,10 +1,25 @@
 import csv
 import matplotlib.pyplot as plt
- 
+from datetime import datetime
+
 filename = "twitter.csv"
  
 fields = []
 rows = []
+
+def extract_month_from_string(date_string):
+    try:
+        # Parse the string into a datetime object
+        dt_object = datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S%z")
+        
+        # Extract the month from the datetime object
+        month = dt_object.month
+        
+        return month
+    except ValueError:
+        # Handle the case when the date_string is not in the correct format
+        return None
+
  
 # reading csv file
 with open(filename, 'r') as csvfile:
@@ -36,21 +51,25 @@ print('Field names are:' + ', '.join(field for field in fields))
 tweetReshareCount = {}
 tweetCommentCount = {}
 tweetLikeCount = {}
-userActivityCount = {}
+userActivityCount = [{}, {}, {}]
 for row in rows[:]:
     # parsing each column of a row
     if len(row) != 6:
         continue
     tweetReshareCount[row[1]] = row[5]
     tweetLikeCount[row[1]] = row[4]
-    if row[3] in userActivityCount:
-        userActivityCount[row[3]] += 1
+    month = int(extract_month_from_string(row[0])) - 1
+    if row[3] in userActivityCount[month]:
+        userActivityCount[month][row[3]] += 1
     else:
-        userActivityCount[row[3]] = 1
+        userActivityCount[month][row[3]] = 1
     
 orderedTweetReshareCount = sorted(tweetReshareCount.items(), key=lambda item: item[1], reverse=True)
 ororderedTweetLikeCount = sorted(tweetLikeCount.items(), key=lambda item: item[1], reverse=True)
-ororderedUserActivityCount = sorted(userActivityCount.items(), key=lambda item: item[1], reverse=True)
+ororderedUserActivityCount = [{}, {}, {}]
+ororderedUserActivityCount[0] = sorted(userActivityCount[0].items(), key=lambda item: item[1], reverse=True)
+ororderedUserActivityCount[1] = sorted(userActivityCount[1].items(), key=lambda item: item[1], reverse=True)
+ororderedUserActivityCount[2] = sorted(userActivityCount[2].items(), key=lambda item: item[1], reverse=True)
 
     
     
@@ -88,7 +107,7 @@ plt.show()
 
     
 # Extract values and frequencies from the data list
-values, frequencies = zip(*ororderedUserActivityCount[:3])
+values, frequencies = zip(*ororderedUserActivityCount[0][:3])
 
 # Create a bar chart
 plt.bar(values, frequencies)
@@ -96,12 +115,37 @@ plt.bar(values, frequencies)
 # Add labels and title
 plt.xlabel('User')
 plt.ylabel('Number of tweets')
-plt.title('User activity count')
+plt.title('Jan user activity count')
 
 # Show the plot
 plt.show()
 
 
+# Extract values and frequencies from the data list
+values, frequencies = zip(*ororderedUserActivityCount[1][:3])
+
+# Create a bar chart
+plt.bar(values, frequencies)
+
+# Add labels and title
+plt.xlabel('User')
+plt.ylabel('Number of tweets')
+plt.title('Feb user activity count')
+
+# Show the plot
+plt.show()
 
 
+# Extract values and frequencies from the data list
+values, frequencies = zip(*ororderedUserActivityCount[2][:3])
 
+# Create a bar chart
+plt.bar(values, frequencies)
+
+# Add labels and title
+plt.xlabel('User')
+plt.ylabel('Number of tweets')
+plt.title('March user activity count')
+
+# Show the plot
+plt.show()
